@@ -41,7 +41,7 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
     NSUserActivity *activity = [self wmf_activityWithType:[pageName lowercaseString]];
     activity.title = wmf_localizationNotNeeded(pageName);
     activity.userInfo = @{@"WMFPage": pageName};
-
+    
     NSMutableSet *set = [activity.keywords mutableCopy];
     [set addObjectsFromArray:[pageName componentsSeparatedByString:@" "]];
     activity.keywords = set;
@@ -67,14 +67,29 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
 + (instancetype)wmf_placesActivityWithURL:(NSURL *)activityURL {
     NSURLComponents *components = [NSURLComponents componentsWithURL:activityURL resolvingAgainstBaseURL:NO];
     NSURL *articleURL = nil;
+    NSNumber *latitude = nil;
+    NSNumber *longtitude = nil;
     for (NSURLQueryItem *item in components.queryItems) {
         if ([item.name isEqualToString:@"WMFArticleURL"]) {
             NSString *articleURLString = item.value;
             articleURL = [NSURL URLWithString:articleURLString];
-            break;
+        }else if([item.name isEqualToString:@"lat"]){
+            NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+            formatter.numberStyle = NSNumberFormatterDecimalStyle;
+            latitude = [formatter numberFromString:item.value];
+        }else if([item.name isEqualToString:@"lon"]){
+            NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+            formatter.numberStyle = NSNumberFormatterDecimalStyle;
+            longtitude = [formatter numberFromString:item.value];
         }
     }
     NSUserActivity *activity = [self wmf_pageActivityWithName:@"Places"];
+    
+    NSMutableDictionary *userInfoDic = [[NSMutableDictionary alloc] initWithDictionary:activity.userInfo];
+    [userInfoDic setObject:latitude forKey:@"lat"];
+    [userInfoDic setObject:longtitude forKey:@"lon"];
+    activity.userInfo = userInfoDic;
+    
     activity.webpageURL = articleURL;
     return activity;
 }
@@ -274,6 +289,22 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
         return [NSURL URLWithString:self.userInfo[CSSearchableItemActivityIdentifier]];
     } else {
         return self.webpageURL;
+    }
+}
+
+- (NSNumber *)wmf_lat {
+    if (self.userInfo[@"lat"] != nil) {
+        return self.userInfo[@"lat"];
+    } else {
+        return nil;
+    }
+}
+
+- (NSNumber *)wmf_lon {
+    if (self.userInfo[@"lon"] != nil) {
+        return self.userInfo[@"lon"];
+    } else {
+        return nil;
     }
 }
 
