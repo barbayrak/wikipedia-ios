@@ -86,8 +86,11 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
     NSUserActivity *activity = [self wmf_pageActivityWithName:@"Places"];
     
     NSMutableDictionary *userInfoDic = [[NSMutableDictionary alloc] initWithDictionary:activity.userInfo];
-    [userInfoDic setObject:latitude forKey:@"lat"];
-    [userInfoDic setObject:longtitude forKey:@"lon"];
+    if (latitude && longtitude) {
+        [userInfoDic setObject:latitude forKey:@"lat"];
+        [userInfoDic setObject:longtitude forKey:@"lon"];
+    }
+
     activity.userInfo = userInfoDic;
     
     activity.webpageURL = articleURL;

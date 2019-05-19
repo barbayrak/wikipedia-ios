@@ -54,6 +54,22 @@
     XCTAssertEqualObjects(activity.webpageURL.absoluteString,
                           @"https://en.wikipedia.org/w/index.php?search=dog&title=Special:Search&fulltext=1");
 }
+    
+- (void)testPlacesURL {
+    NSURL *url = [NSURL URLWithString:@"wikipedia://places?lat=10.2&lon=-5.8"];
+    NSUserActivity *activity = [NSUserActivity wmf_activityForWikipediaScheme:url];
+    XCTAssertEqual(activity.wmf_type, WMFUserActivityTypePlaces);
+    XCTAssertEqualObjects(activity.wmf_lat, [NSNumber numberWithDouble:10.2]);
+    XCTAssertEqualObjects(activity.wmf_lon, [NSNumber numberWithDouble:-5.8]);
+}
+    
+- (void)testPlacesInvalidLatAndLon {
+    NSURL *url = [NSURL URLWithString:@"wikipedia://places?lat=10.2"];
+    NSUserActivity *activity = [NSUserActivity wmf_activityForWikipediaScheme:url];
+    XCTAssertEqual(activity.wmf_type, WMFUserActivityTypePlaces);
+    XCTAssertNil(activity.wmf_lat);
+    XCTAssertNil(activity.wmf_lon);
+}
 
 @end
 
